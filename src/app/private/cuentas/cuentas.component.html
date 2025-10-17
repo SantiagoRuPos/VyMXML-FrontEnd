@@ -1,0 +1,410 @@
+
+  <header class="w-full h-14 bg-slate-900/80 backdrop-blur-lg ring-1 ring-black/10 px-4 flex items-center justify-end">
+    <app-menu></app-menu>
+  </header>
+  
+  <!-- CONTENEDOR DE PÁGINA: deja aire a los lados y vertical -->
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+  
+    <!-- Topbar -->
+    <section class="flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Diccionario de Cuentas PUC</h1>
+        <span class="rounded-full bg-slate-100 text-slate-700 px-2.5 py-1 text-xs">{{ total }} cuentas</span>
+      </div>
+
+      <button (click)="abrirCargaMasiva()"
+      class="inline-flex items-center gap-2 rounded-lg bg-white ring-1 ring-slate-300 text-slate-800 px-4 py-2.5 shadow-sm hover:bg-slate-50 active:scale-[.99]">
+      <span class="material-symbols-rounded text-[20px]">upload_file</span>
+      Carga masiva
+    </button>
+      <button (click)="abrirCrear()"
+        class="inline-flex items-center gap-2 rounded-lg bg-slate-900 text-white px-4 py-2.5 shadow-sm hover:bg-slate-800 active:scale-[.99]">
+        <span class="material-symbols-rounded text-[20px]">add</span>
+        Agregar cuenta
+      </button>
+    </section>
+  
+    <!-- Filtros -->
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 md:p-7 shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <!-- Buscar -->
+        <div class="md:col-span-6">
+          <label class="block text-sm text-slate-600 mb-1">Buscar</label>
+          <div class="relative">
+            <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+            <input [(ngModel)]="search" (ngModelChange)="onSearchChange()" type="text"
+                   placeholder="Código, nombre o tercero…"
+                   class="w-full rounded-lg border border-slate-300 bg-white pl-10 pr-3 py-2.5 outline-none focus:ring-2 focus:ring-sky-500" />
+          </div>
+        </div>
+  
+        <!-- Tipo -->
+        <div class="md:col-span-3">
+          <label class="block text-sm text-slate-600 mb-1">Tipo</label>
+          <select [(ngModel)]="filtroTipo" (ngModelChange)="refrescar()"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="todos">Todos</option>
+            <option value="ingreso">Ingreso</option>
+            <option value="impuestos">Impuestos</option>
+            <option value="pago">Pago</option>
+            <option value="costo">Costo</option>
+            <option value="gasto">Gasto</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+  
+        <!-- Naturaleza -->
+        <div class="md:col-span-3">
+          <label class="block text-sm text-slate-600 mb-1">Naturaleza</label>
+          <select [(ngModel)]="filtroNaturaleza" (ngModelChange)="refrescar()"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:ring-2 focus:ring-sky-500">
+            <option value="todas">Todas</option>
+            <option value="debito">Débito</option>
+            <option value="credito">Crédito</option>
+          </select>
+        </div>
+  
+        <!-- Checkbox + Filas/página -->
+        <div class="md:col-span-6 flex items-center gap-2 pt-1">
+          <input type="checkbox" [(ngModel)]="soloActivos" (ngModelChange)="refrescar()" class="h-4 w-4 accent-sky-600">
+          <span class="text-sm text-slate-700">Mostrar solo activas</span>
+        </div>
+        <div class="md:col-span-6 flex items-center md:justify-end gap-3">
+          <label class="text-sm text-slate-600">Filas / página</label>
+          <select [(ngModel)]="pageSize" (ngModelChange)="page=1"
+                  class="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 outline-none focus:ring-2 focus:ring-sky-500">
+            <option>10</option><option>25</option><option>50</option>
+          </select>
+        </div>
+      </div>
+  
+      <p class="mt-4 text-xs text-slate-500">Usa los filtros para acotar la búsqueda.</p>
+    </section>
+  
+    <!-- Tabla -->
+    <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-[960px] w-full text-sm">
+          <thead class="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm">
+            <tr class="text-slate-600">
+              <th class="px-5 py-3.5 text-left font-medium">Código</th>
+              <th class="px-5 py-3.5 text-left font-medium">Nombre</th>
+              <th class="px-5 py-3.5 text-left font-medium">Tipo</th>
+              <th class="px-5 py-3.5 text-left font-medium">Naturaleza</th>
+              <th class="px-5 py-3.5 text-left font-medium">Tercero</th>
+              <th class="px-5 py-3.5 text-left font-medium">Estado</th>
+              <th class="px-5 py-3.5 text-left font-medium">Actualizado</th>
+              <th class="px-5 py-3.5 text-right font-medium">Acciones</th>
+            </tr>
+          </thead>
+  
+          <tbody>
+            <tr *ngFor="let c of pageItems; trackBy: trackById"
+                class="border-t border-slate-200 odd:bg-slate-50/40 hover:bg-sky-50/40">
+              <td class="px-5 py-3.5 font-semibold text-slate-900">{{ c.codigo }}</td>
+              <td class="px-5 py-3.5 text-slate-800">{{ c.nombre }}</td>
+              <td class="px-5 py-3.5">
+                <span class="inline-block rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs text-slate-700">{{ c.tipo }}</span>
+              </td>
+              <td class="px-5 py-3.5">
+                <span class="inline-block rounded-full px-2 py-0.5 text-xs border"
+                      [ngClass]="{
+                        'bg-emerald-50 text-emerald-700 border-emerald-200': c.naturaleza==='debito',
+                        'bg-sky-50 text-sky-700 border-sky-200': c.naturaleza==='credito'
+                      }">
+                  {{ c.naturaleza | titlecase }}
+                </span>
+              </td>
+              <td class="px-5 py-3.5 text-slate-700">{{ c.tercero }}</td>
+              <td class="px-5 py-3.5">
+                <span class="inline-block rounded-full px-2 py-0.5 text-xs border"
+                      [ngClass]="{ 'bg-emerald-50 text-emerald-700 border-emerald-200': c.activo, 'bg-amber-50 text-amber-700 border-amber-200': !c.activo }">
+                  {{ c.activo ? 'Activa' : 'Inactiva' }}
+                </span>
+              </td>
+              <td class="px-5 py-3.5 text-slate-500">{{ c.actualizadoEn | date:'yyyy-MM-dd HH:mm' }}</td>
+              <td class="px-5 py-3.5">
+                <div class="flex justify-end gap-2.5">
+                  <button (click)="abrirEditar(c)"
+                          class="inline-flex items-center gap-1 rounded-lg border border-slate-300 px-3 py-1.5 text-slate-700 hover:bg-slate-50">
+                    <span class="material-symbols-rounded text-[18px]">edit</span> Editar
+                  </button>
+                  <button (click)="eliminarCuenta(c.id)"
+                          class="inline-flex items-center gap-1 rounded-lg border border-rose-300 px-3 py-1.5 text-rose-700 hover:bg-rose-50">
+                    <span class="material-symbols-rounded text-[18px]">delete</span> Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+  
+            <tr *ngIf="!pageItems.length">
+              <td colspan="8" class="px-5 py-10 text-center text-slate-500">
+                No hay resultados. Ajusta filtros o crea una cuenta con “Agregar cuenta”.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  
+    <!-- Paginación -->
+    <section class="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-600">
+      <div></div>
+      <div class="flex items-center gap-1">
+        <button (click)="prevPage()" [disabled]="page<=1"
+                class="rounded-lg border border-slate-300 px-3 py-1.5 disabled:opacity-50">Anterior</button>
+        <span class="px-2 text-slate-500">Página {{ page }} / {{ pageCount }}</span>
+        <button (click)="nextPage()" [disabled]="page>=pageCount"
+                class="rounded-lg border border-slate-300 px-3 py-1.5 disabled:opacity-50">Siguiente</button>
+      </div>
+    </section>
+  
+  </main>
+  
+  
+  <!-- Modal (mismo de antes, puedes mantener tu versión) -->
+  <!-- … tu modal de crear/editar tal como ya lo tienes … -->
+  
+  <!-- Modal crear/editar -->
+  <div *ngIf="modalAbierto" class="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
+    <div class="w-full max-w-3xl rounded-2xl bg-white shadow-xl">
+      <header class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+        <h3 class="text-lg font-semibold text-slate-900">
+          {{ modo==='crear' ? 'Nueva cuenta PUC' : 'Editar cuenta PUC' }}
+        </h3>
+        <button (click)="cerrarModal()" class="rounded-full p-1.5 text-slate-500 hover:bg-slate-100">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </header>
+  
+      <div class="px-5 py-5 space-y-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div>
+            <label class="block text-sm text-slate-600 mb-1">Código PUC</label>
+            <input [(ngModel)]="form.codigo" type="text"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:ring-2 focus:ring-sky-500">
+          </div>
+          <div>
+            <label class="block text-sm text-slate-600 mb-1">Nombre</label>
+            <input [(ngModel)]="form.nombre" type="text"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:ring-2 focus:ring-sky-500">
+          </div>
+  
+          <div>
+            <label class="block text-sm text-slate-600 mb-1">Tipo</label>
+            <select [(ngModel)]="form.tipo"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:ring-2 focus:ring-sky-500">
+              <option *ngFor="let t of tipos" [value]="t.value">{{ t.label }}</option>
+            </select>
+          </div>
+  
+          <div>
+            <label class="block text-sm text-slate-600 mb-1">Naturaleza</label>
+            <select [(ngModel)]="form.naturaleza"
+                    class="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:ring-2 focus:ring-sky-500">
+              <option *ngFor="let n of naturalezas" [value]="n.value">{{ n.label }}</option>
+            </select>
+          </div>
+  
+          <div>
+            <label class="block text-sm text-slate-600 mb-1">Tercero</label>
+            <input [(ngModel)]="form.tercero" placeholder="Documento o NIT fijo"
+                   class="w-full rounded-lg border border-slate-300 px-3 py-2.5 focus:ring-2 focus:ring-sky-500">
+            <p class="text-xs text-slate-500 mt-1">Escribe <b>Documento</b> para usar el NIT/CC del XML, o define un NIT específico.</p>
+          </div>
+  
+          <div>
+            <label class="block text-sm text-slate-600 mb-1">Notas (opcional)</label>
+            <input [(ngModel)]="form.notas" class="w-full rounded-lg border border-slate-300 px-3 py-2.5">
+          </div>
+        </div>
+  
+        <div class="flex items-center justify-between">
+          <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+            <input type="checkbox" [(ngModel)]="form.activo" class="h-4 w-4">
+            Cuenta activa
+          </label>
+  
+          <div class="flex items-center gap-2">
+            <button (click)="cerrarModal()"
+                    class="rounded-lg border border-slate-300 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
+              Cancelar
+            </button>
+            <button (click)="guardar()"
+                    class="rounded-lg bg-sky-600 text-white px-4 py-2.5 hover:bg-sky-700">
+              Guardar
+            </button>
+          </div>
+        </div>
+  
+        <div *ngIf="error" class="rounded-lg bg-rose-50 text-rose-700 px-3 py-2 text-sm border border-rose-200">
+          {{ error }}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal Carga Masiva -->
+<div *ngIf="mostrarCargaMasiva" class="fixed inset-0 z-50 grid place-items-center bg-black/40 p-4">
+  <div class="w-full max-w-3xl rounded-2xl bg-white shadow-xl">
+    <!-- Header -->
+    <header class="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+      <div>
+        <h3 class="text-lg font-semibold text-slate-900">Carga masiva por Excel / CSV</h3>
+        <p class="text-xs text-slate-500 mt-0.5">
+          Respeta los encabezados: <b>codigo, nombre, tipo, naturaleza, nota, estado</b>.
+        </p>
+      </div>
+      <button (click)="cerrarCargaMasiva()" class="rounded-full p-1.5 text-slate-500 hover:bg-slate-100">
+        <span class="material-symbols-rounded">close</span>
+      </button>
+    </header>
+
+    <!-- Body -->
+    <div class="px-5 py-5 space-y-5">
+
+      <!-- Bloque plantilla -->
+      <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div class="text-sm text-slate-700">
+          <div class="font-medium">Plantilla recomendada</div>
+          <div class="text-slate-500">Descarga una plantilla con los encabezados correctos.</div>
+        </div>
+        <div class="flex gap-2">
+          <button (click)="descargarPlantillaPUC()"
+                  class="inline-flex items-center gap-2 rounded-lg bg-slate-900 text-white px-3 py-2 hover:bg-slate-800">
+            <span class="material-symbols-rounded text-[18px]">download</span>
+            Descargar plantilla
+          </button>
+        </div>
+      </div>
+
+      <!-- Selector archivo -->
+      <div>
+        <label class="block text-sm text-slate-600 mb-1">Archivo (.xlsx / .xls / .csv)</label>
+        <div class="relative rounded-xl border border-dashed border-slate-300 bg-white p-4">
+          <input type="file" accept=".xlsx,.xls,.csv" (change)="onFileMasivo($event)"
+                 class="w-full rounded-md border border-slate-300 px-3 py-2 file:mr-3 file:rounded-md file:border-0 file:bg-slate-900 file:px-3 file:py-1.5 file:text-white file:hover:bg-slate-800">
+          <p class="mt-2 text-xs text-slate-500">
+            Tamaño máximo sugerido: 5–8 MB. La primera hoja del libro será procesada.
+          </p>
+          <div *ngIf="archivoMasivo as f" class="mt-2 text-xs text-slate-600">
+            Archivo seleccionado: <span class="font-medium">{{ f.name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Opciones -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+          <input type="checkbox" [(ngModel)]="dryRun" class="h-4 w-4 accent-sky-600">
+          Simular (no guardar)
+        </label>
+
+        <label class="inline-flex items-center gap-2 text-sm text-slate-700">
+          <input type="checkbox" [(ngModel)]="upsert" class="h-4 w-4 accent-sky-600">
+          Actualizar si existe (por código)
+        </label>
+
+<!-- Estado por defecto -->
+<div>
+  <label class="block text-sm text-slate-600 mb-1">Estado por defecto</label>
+  <select [(ngModel)]="estadoDefault"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:ring-2 focus:ring-sky-500">
+    <option value="activo">activo</option>
+    <option value="inactivo">inactivo</option>
+  </select>
+  <p class="mt-1 text-xs text-slate-500">Se usa si la columna <b>estado</b> viene vacía.</p>
+</div>
+
+      </div>
+
+      <!-- Estado de envío -->
+      <div *ngIf="cargandoMasivo" class="flex items-center gap-3 text-slate-600 text-sm">
+        <span class="material-symbols-rounded animate-spin">progress_activity</span>
+        Procesando archivo, por favor espera…
+      </div>
+
+      <!-- Reporte de validación / resultado -->
+      <div *ngIf="reporteMasivo" class="rounded-lg border border-slate-200 p-4">
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-sm">
+          <div><span class="text-slate-500">Total:</span> <b>{{ reporteMasivo.total }}</b></div>
+          <div *ngIf="reporteMasivo.validas!=null"><span class="text-slate-500">Válidas:</span> <b class="text-emerald-700">{{ reporteMasivo.validas }}</b></div>
+          <div *ngIf="reporteMasivo.invalidas!=null"><span class="text-slate-500">Inválidas:</span> <b class="text-rose-700">{{ reporteMasivo.invalidas }}</b></div>
+          <div *ngIf="reporteMasivo.inserted!=null"><span class="text-slate-500">Insertadas:</span> <b>{{ reporteMasivo.inserted }}</b></div>
+          <div *ngIf="reporteMasivo.updated!=null"><span class="text-slate-500">Actualizadas:</span> <b>{{ reporteMasivo.updated }}</b></div>
+          <div *ngIf="reporteMasivo.insertedOrUpdated!=null"><span class="text-slate-500">Procesadas:</span> <b>{{ reporteMasivo.insertedOrUpdated }}</b></div>
+        </div>
+
+        <div *ngIf="reporteMasivo?.errores?.length" class="mt-4">
+          <div class="text-sm font-medium text-slate-800 mb-2">Errores por fila</div>
+          <div class="overflow-auto max-h-72 rounded-lg border border-slate-200">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 text-slate-500">
+                <tr>
+                  <th class="px-3 py-2">Fila</th>
+                  <th class="px-3 py-2">Código</th>
+                  <th class="px-3 py-2">Detalle</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let e of reporteMasivo.errores" class="border-t border-slate-200">
+                  <td class="px-3 py-2">{{ e.fila }}</td>
+                  <td class="px-3 py-2">{{ e.codigo }}</td>
+                  <td class="px-3 py-2">
+                    <ul class="list-disc pl-4">
+                      <li *ngFor="let m of e.errores">{{ m }}</li>
+                    </ul>
+                  </td>
+                </tr>
+                <tr *ngIf="!reporteMasivo.errores.length">
+                  <td colspan="3" class="px-3 py-6 text-center text-slate-500">Sin errores.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Ayuda de formato -->
+        <div class="mt-4 text-xs text-slate-500">
+          <div class="font-medium text-slate-700 mb-1">Formato esperado</div>
+          <code class="block rounded-md bg-slate-50 border border-slate-200 p-2">
+            codigo,nombre,tipo,naturaleza,nota,estado
+          </code>
+          <div class="mt-1">
+            <b>tipo</b> = ingreso | impuestos | pago | costo | gasto | otro &nbsp;•&nbsp;
+            <b>naturaleza</b> = debito | credito
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje de error simple (opcional, si mapeas err.error.message a alguna prop) -->
+      <!-- <div *ngIf="errorMasivo" class="rounded-lg bg-rose-50 text-rose-700 px-3 py-2 text-sm border border-rose-200">
+        {{ errorMasivo }}
+      </div> -->
+    </div>
+
+    <footer class="flex items-center justify-between gap-2 border-t border-slate-200 px-5 py-4">
+      <button (click)="cerrarCargaMasiva()" class="rounded-lg border border-slate-300 px-4 py-2.5 text-slate-700 hover:bg-slate-50">
+        Cancelar
+      </button>
+    
+      <div class="flex items-center gap-2">
+        <!-- aparece si dryRun y sin errores -->
+        <button
+          *ngIf="dryRun && (reporteMasivo?.invalidas ?? 0) === 0 && (reporteMasivo?.total ?? 0) > 0"
+          (click)="dryRun=false; subirMasivo()"
+          class="rounded-lg border border-emerald-300 text-emerald-700 px-4 py-2.5 hover:bg-emerald-50">
+          Subir ahora
+        </button>
+    
+        <button [disabled]="!archivoMasivo || cargandoMasivo"
+                (click)="subirMasivo()"
+                class="rounded-lg bg-slate-900 text-white px-4 py-2.5 hover:bg-slate-800 disabled:opacity-50">
+          {{ dryRun ? 'Validar' : 'Subir' }}
+        </button>
+      </div>
+    </footer>
+    
+  </div>
+</div>

@@ -1,0 +1,334 @@
+<header class="w-full h-14 bg-slate-900/80 backdrop-blur-lg ring-1 ring-black/10 px-4 flex items-center justify-end">
+  <app-menu></app-menu>
+</header>
+
+<main class="mx-auto max-w-7xl px-6 py-10 space-y-8 bg-slate-50 min-h-screen">
+
+  <!-- Toolbar -->
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="inline-flex items-center gap-2 rounded-lg bg-white shadow-sm ring-1 ring-slate-200 px-3 py-2">
+        <i class="material-symbols-rounded text-sky-600">apartment</i>
+        <span class="font-medium text-slate-700">{{ empresaNombre || 'Sin empresa' }}</span>
+      </div>
+      <div class="inline-flex items-center gap-2 rounded-lg bg-white shadow-sm ring-1 ring-slate-200 px-3 py-2">
+        <i class="material-symbols-rounded text-amber-600">calendar_month</i>
+        <span class="font-medium text-slate-700">{{ periodo }}</span>
+      </div>
+      <span
+        class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300">
+        <i class="material-symbols-rounded text-base">database</i>
+        Conectado
+      </span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button (click)="onNuevoLote()"
+        class="inline-flex items-center gap-2 rounded-lg bg-sky-600 text-white px-4 py-2 hover:bg-sky-700 active:scale-[.99] transition">
+        <i class="material-symbols-rounded">add_circle</i> Nuevo lote
+      </button>
+      <button (click)="onExportar()"
+        class="inline-flex items-center gap-2 rounded-lg bg-white text-slate-700 px-4 py-2 ring-1 ring-slate-200 hover:bg-slate-50">
+        <i class="material-symbols-rounded">download</i> Exportar Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- Cargar y preparar datos -->
+  <section class="rounded-2xl bg-white shadow ring-1 ring-slate-200 p-6">
+    <h2 class="text-lg font-semibold text-slate-800 mb-4">Cargar y preparar datos</h2>
+    <p class="text-sm text-slate-500 mb-6">
+      Selecciona el <strong>tipo de XML</strong>, la <strong>empresa</strong>, el <strong>plan de cuentas</strong> y
+      carga tus archivos.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <!-- Tipo -->
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Tipo de XML</label>
+        <div class="inline-flex rounded-lg ring-1 ring-slate-300 overflow-hidden bg-white">
+          <button type="button" (click)="tipo='EMITIDOS'"
+            [ngClass]="tipo==='EMITIDOS' ? 'bg-sky-600 text-white' : 'text-slate-700 hover:bg-slate-50'"
+            class="px-4 py-2 text-sm font-medium transition w-1/2">Emitidos</button>
+          <button type="button" (click)="tipo='RECIBIDOS'"
+            [ngClass]="tipo==='RECIBIDOS' ? 'bg-sky-600 text-white' : 'text-slate-700 hover:bg-slate-50'"
+            class="px-4 py-2 text-sm font-medium transition w-1/2">Recibidos</button>
+        </div>
+      </div>
+
+      <!-- Empresa -->
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Empresa</label>
+        <select [(ngModel)]="empresaId" (ngModelChange)="onEmpresaChange($event)"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:ring-sky-500 focus:border-sky-500">
+          <option [ngValue]="null">— Selecciona —</option>
+          <option *ngFor="let e of empresas" [ngValue]="e.id">{{ e.nombre }}</option>
+        </select>
+      </div>
+
+      <!-- Plan -->
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Plan de cuentas</label>
+        <select [(ngModel)]="paqueteSelId" (ngModelChange)="onPaqueteChange($event)"
+          class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:ring-sky-500 focus:border-sky-500">
+          <option [ngValue]="null">— Selecciona —</option>
+          <option *ngFor="let p of paquetesFiltrados" [ngValue]="p.id">
+            {{ p.nombre }}
+          </option>
+        </select>
+
+        <p *ngIf="paquetesEmpresa.length > 0 && paquetesFiltrados.length === 0" class="mt-1 text-xs text-amber-600">
+          No hay planes de cuentas para <b>{{ tipoXmlSel | titlecase }}</b> en esta empresa.
+          Cambia el tipo de XML o crea un paquete con ese tipo.
+        </p>
+      </div>
+
+
+    </div>
+
+    <!-- Archivos + acciones -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+      <div class="md:col-span-2">
+        <label class="block text-sm font-medium text-slate-700 mb-2">Archivos XML / ZIP</label>
+        <label
+          class="flex items-center justify-between gap-4 rounded-xl ring-2 ring-dashed ring-slate-300 bg-slate-50 px-4 py-6 cursor-pointer hover:bg-slate-100 transition">
+          <div class="flex items-center gap-4">
+            <span class="grid h-11 w-11 place-items-center rounded-lg border border-slate-200 bg-white">
+              <i class="material-symbols-rounded text-2xl text-sky-600">upload_file</i>
+            </span>
+            <div>
+              <p class="text-slate-700 font-medium">Arrastra o haz clic para seleccionar</p>
+              <p class="text-xs text-slate-500">Acepta .xml y .zip · máx. 200 archivos</p>
+            </div>
+          </div>
+          <input type="file" class="hidden" multiple accept=".xml,.zip" (change)="onFiles($event)" />
+          <span class="text-sm text-slate-500">{{ resumenArchivos || 'Ningún archivo seleccionado' }}</span>
+        </label>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <button (click)="onProcesar()"
+          class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-sky-600 text-white px-4 py-3 hover:bg-sky-700 active:scale-[.99] transition">
+          <i class="material-symbols-rounded">play_arrow</i> Procesar
+        </button>
+        <button (click)="onLimpiar()"
+          class="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-slate-100 text-slate-700 px-4 py-3 ring-1 ring-slate-300 hover:bg-slate-200">
+          <i class="material-symbols-rounded">backspace</i> Limpiar
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======================= VISTA FACTURA (clara) ======================= -->
+  <section *ngIf="docs.length" class="rounded-2xl overflow-hidden bg-white shadow ring-1 ring-slate-200">
+    <!-- Cabecera clara + selector -->
+    <div class="p-6 border-b border-slate-200 bg-slate-50">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <!-- Izquierda: título y metadatos -->
+        <div class="space-y-1">
+          <h2 class="text-xl font-semibold text-slate-800">
+            Factura: <span class="text-sky-600 font-bold">{{ encabezado?.numero || '—' }}</span>
+          </h2>
+          <p class="text-xs text-slate-500">
+            Tipo: {{ tipo }} · Empresa: {{ empresaNombre }}
+          </p>
+        </div>
+
+        <!-- Derecha: barra de controles -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 w-full md:w-auto">
+
+          <!-- Navegación + selector de documento -->
+          <div
+            class="flex items-center gap-2 bg-white rounded-xl ring-1 ring-slate-200 px-2 py-1 shadow-sm w-full sm:w-auto">
+            <button type="button" (click)="prevDoc()"
+              class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-600 hover:bg-slate-100">
+              ◀
+            </button>
+
+            <select
+              class="rounded-lg border border-slate-300 bg-white text-slate-700 px-3 py-2 text-sm shadow-sm w-full sm:min-w-[22rem]"
+              [ngModel]="selectedDocIndex" (ngModelChange)="applySelection($event)">
+              <option *ngFor="let d of docs; let i = index" [ngValue]="i">
+                {{ i+1 }} — {{ d.header.numero || d.filename }} ({{ d.filename }})
+              </option>
+            </select>
+
+            <button type="button" (click)="nextDoc()"
+              class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-600 hover:bg-slate-100">
+              ▶
+            </button>
+          </div>
+
+          <!-- Selector de impuesto (solo RECIBIDOS y tras Procesar) -->
+          <div *ngIf="tipo==='RECIBIDOS'" class="flex items-center gap-2 sm:ml-2 w-full sm:w-auto">
+            <span class="text-xs text-slate-500">Impuesto</span>
+            <select
+              class="rounded-lg border border-slate-300 bg-white text-slate-700 px-3 py-2 text-sm shadow-sm w-full sm:w-[18rem]"
+              [ngModel]="impuestoSeleccionadoPara[selectedDocIndex]"
+              (ngModelChange)="onImpuestoSeleccionado(selectedDocIndex, $event)">
+              <option [ngValue]="''" disabled>Seleccione…</option>
+              <optgroup *ngFor="let grupo of impuestosAgrupados" [label]="grupo.grupo">
+                <option *ngFor="let opt of grupo.opciones" [ngValue]="opt.codigo">
+                  {{ opt.nombre }} — {{ opt.tarifaTexto }}
+                </option>
+              </optgroup>
+              <!-- Siempre al final: No aplica -->
+              <option [ngValue]="'NA'">No aplica</option>
+            </select>
+          </div>
+
+
+        </div>
+      </div>
+
+      <!-- Encabezado -->
+      <div class="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3 text-sm">
+        <div>
+          <p class="text-slate-500">Fecha</p>
+          <p class="font-medium text-slate-800">{{ encabezado?.fecha || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-slate-500">Proveedor</p>
+          <p class="font-medium text-slate-800">{{ encabezado?.proveedor || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-slate-500">Cliente</p>
+          <p class="font-medium text-slate-800">
+            {{ clientePrincipal }}
+          </p>
+          <p class="text-sm text-slate-600" *ngIf="clienteSecundario">
+            {{ clienteSecundario }}
+          </p>
+        </div>
+
+
+
+        <div>
+          <p class="text-slate-500">Moneda</p>
+          <p class="font-medium text-slate-800">{{ encabezado?.moneda || '—' }}</p>
+        </div>
+        <div class="md:col-span-2">
+          <p class="text-slate-500">CUFE / UUID</p>
+          <p class="font-medium text-slate-800 truncate">{{ encabezado?.cufe || '—' }}</p>
+        </div>
+        <div>
+          <p class="text-slate-500">Total</p>
+          <p class="font-semibold text-lg text-emerald-600">${{ totales.total | number:'1.2-2' }}</p>
+        </div>
+      </div>
+
+      <h3 class="mt-6 text-slate-800 font-semibold">Productos</h3>
+    </div>
+
+    <!-- Tabla clara -->
+    <div class="bg-white">
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-slate-700">
+          <thead class="bg-slate-100 text-slate-600 border-b border-slate-200">
+            <tr>
+              <th class="px-5 py-3 text-left w-16">#</th>
+              <th class="px-5 py-3 text-left">Descripción</th>
+              <th class="px-5 py-3 text-right w-36">Cantidad</th>
+              <th class="px-5 py-3 text-right w-40">Valor Unitario</th>
+              <th class="px-5 py-3 text-right w-40">Valor Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let it of items; let i = index" class="border-b border-slate-100">
+              <td class="px-5 py-3 text-slate-500">{{ i + 1 }}</td>
+              <td class="px-5 py-3 font-medium">{{ it.descripcion }}</td>
+              <td class="px-5 py-3 text-right">{{ it.cantidad | number:'1.2-2' }}</td>
+              <td class="px-5 py-3 text-right">${{ it.unitario | number:'1.2-2' }}</td>
+              <td class="px-5 py-3 text-right">${{ it.total | number:'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Totales -->
+      <div class="grid gap-2 md:grid-cols-3 text-sm p-6 text-slate-800">
+        <div class="md:col-start-2 flex justify-between border-t border-slate-200 pt-3">
+          <span class="text-slate-500">Subtotal</span>
+          <span class="font-medium">${{ totales.subtotal | number:'1.2-2' }}</span>
+        </div>
+        <div class="flex justify-between border-t border-slate-200 pt-3">
+          <span class="text-slate-500">IVA</span>
+          <span class="font-medium">${{ totales.iva | number:'1.2-2' }}</span>
+        </div>
+        <div class="md:col-start-3 flex justify-between border-t border-slate-200 pt-3 text-base">
+          <span class="text-slate-700">Total</span>
+          <span class="font-semibold text-emerald-600">${{ totales.total | number:'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Resumen + actividad -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- KPIs -->
+    <div class="rounded-2xl bg-white shadow ring-1 ring-slate-200 p-6">
+      <h3 class="text-slate-800 font-semibold mb-4">Resumen del periodo</h3>
+      <ul class="grid grid-cols-2 gap-3">
+        <li class="rounded-lg border border-slate-200 p-4 bg-slate-50">
+          <p class="text-xs text-slate-500">Facturas</p>
+          <p class="text-2xl font-semibold text-slate-700">{{ kpi.facturas }}</p>
+        </li>
+        <li class="rounded-lg border border-slate-200 p-4 bg-slate-50">
+          <p class="text-xs text-slate-500">Impuestos</p>
+          <p class="text-2xl font-semibold text-slate-700">{{ kpi.impuestos | number:'1.0-0' }}</p>
+        </li>
+        <li class="rounded-lg border border-slate-200 p-4 bg-slate-50">
+          <p class="text-xs text-slate-500">Retenciones</p>
+          <p class="text-2xl font-semibold text-slate-700">{{ kpi.retenciones | number:'1.0-0' }}</p>
+        </li>
+        <li class="rounded-lg border border-slate-200 p-4 bg-slate-50">
+          <p class="text-xs text-slate-500">Asientos</p>
+          <p class="text-2xl font-semibold text-slate-700">{{ kpi.asientos }}</p>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Actividad -->
+    <div class="lg:col-span-2 rounded-2xl bg-white shadow ring-1 ring-slate-200">
+      <div class="px-6 py-4 border-b border-slate-200">
+        <h3 class="text-slate-800 font-semibold">Actividad reciente</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead class="text-left text-slate-600 bg-slate-50">
+            <tr>
+              <th class="px-6 py-3">Lote</th>
+              <th class="px-6 py-3">Empresa</th>
+              <th class="px-6 py-3">Tipo</th>
+              <th class="px-6 py-3">Archivos</th>
+              <th class="px-6 py-3">Estado</th>
+              <th class="px-6 py-3">Fecha</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200">
+            <tr *ngFor="let l of actividad">
+              <td class="px-6 py-3 font-mono text-xs">{{ l.id.slice(0,8) }}</td>
+              <td class="px-6 py-3">{{ l.empresaNombre }}</td>
+              <td class="px-6 py-3">{{ l.tipo }}</td>
+              <td class="px-6 py-3">{{ l.ok }}/{{ l.err }}</td>
+              <td class="px-6 py-3">
+                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ring-1" [ngClass]="l.estado==='PROCESADO'
+                        ? 'text-emerald-700 ring-emerald-200'
+                        : 'text-sky-700 ring-sky-200'">
+                  {{ l.estado }}
+                </span>
+              </td>
+              <td class="px-6 py-3">{{ l.fecha | date:'short' }}</td>
+            </tr>
+            <tr *ngIf="!actividad.length">
+              <td class="px-6 py-8 text-center text-slate-500" colspan="6">
+                No hay actividad aún. Carga archivos para comenzar.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>

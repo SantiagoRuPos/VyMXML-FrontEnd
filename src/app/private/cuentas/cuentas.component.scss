@@ -1,0 +1,124 @@
+/* ========== tokens (opcional, deja fácil de ajustar) ========== */
+:root {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --ink: #0f172a;       /* slate-900 */
+    --muted: #64748b;     /* slate-500 */
+    --line: #e2e8f0;      /* slate-200 */
+    --ring: #38bdf8;      /* sky-400 */
+    --chip: #f8fafc;      /* slate-50 */
+    --chip-bd: #e5e7eb;   /* slate-200 */
+    --ok-bg: #ecfdf5;     /* emerald-50 */
+    --ok-bd: #a7f3d0;     /* emerald-200 */
+    --ok-ink:#065f46;     /* emerald-800 */
+    --info-bg:#f0f9ff;    /* sky-50 */
+    --info-bd:#bae6fd;    /* sky-200 */
+    --info-ink:#075985;   /* sky-800 */
+    --warn-bg:#fffbeb;    /* amber-50 */
+    --warn-bd:#fde68a;    /* amber-200 */
+    --warn-ink:#92400e;   /* amber-800 */
+  }
+  
+  /* ========== layout ========== */
+  header.w-full {
+    box-shadow: 0 1px 0 rgba(15,23,42,.06), 0 8px 24px -20px rgba(0,0,0,.45);
+  }
+  
+  /* tarjetas/filtros */
+  .mb-5.rounded-xl.border.bg-white {
+    background: var(--card);
+    border-color: var(--line);
+    box-shadow: 0 6px 20px -12px rgba(2, 6, 23, .12);
+  }
+  
+  /* inputs */
+  input[type="text"], select {
+    transition: box-shadow .15s ease, border-color .15s ease;
+  }
+  input[type="text"]:focus,
+  select:focus {
+    box-shadow: 0 0 0 3px rgba(56,189,248,.25);
+    border-color: var(--ring) !important;
+  }
+  
+  /* checkbox acentuado visualmente igual en todos los navegadores */
+  input[type="checkbox"] {
+    accent-color: var(--ring);
+  }
+  
+  /* ayuda bajo filtros */
+  .text-xs.text-slate-500 { color: var(--muted); }
+  
+  /* ========== tabla ========== */
+  table { color: var(--ink); }
+  thead {
+    background: rgba(248,250,252,.95);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+  .th { padding: .75rem 1rem; text-align: left; font-weight: 600; color:#475569; }
+  .td { padding: .80rem 1rem; vertical-align: middle; }
+  .tr { border-top: 1px solid rgba(148,163,184,.22); }
+  tbody tr:nth-child(odd) { background: rgba(248,250,252,.6); }
+  tbody tr:hover { background: rgba(56,189,248,.08); }
+  
+  /* scroll bar sutil en la tabla */
+  div.overflow-auto::-webkit-scrollbar { height: 10px; }
+  div.overflow-auto::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+  div.overflow-auto::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+  div.overflow-auto::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  
+  /* celdas de texto largo con truncado elegante */
+  .td.text-slate-800 {
+    max-width: 420px;
+    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  }
+  
+  /* ========== chips/badges ========== */
+  .chip {
+    display: inline-block;
+    padding: .18rem .55rem;
+    border-radius: 9999px;
+    font-size: .72rem;
+    line-height: 1rem;
+    background: var(--chip);
+    border: 1px solid var(--chip-bd);
+    color: #334155;
+  }
+  .chip-emerald { background: var(--ok-bg);   border-color: var(--ok-bd);   color: var(--ok-ink); }
+  .chip-sky     { background: var(--info-bg); border-color: var(--info-bd); color: var(--info-ink); }
+  .chip-amber   { background: var(--warn-bg); border-color: var(--warn-bd); color: var(--warn-ink); }
+  
+  /* ========== botones acciones/paginación ========== */
+  .btn-outline, .btn-danger-outline, .pager-btn {
+    display:inline-flex; align-items:center; gap:.35rem;
+    padding:.48rem .75rem; border-radius:.65rem;
+    background:#fff; border:1px solid #cbd5e1; color:#334155;
+    transition: background .15s ease, transform .05s ease, border-color .15s ease;
+  }
+  .btn-outline:hover      { background:#f8fafc; }
+  .btn-danger-outline     { border-color:#fecaca; color:#b91c1c; }
+  .btn-danger-outline:hover { background:#fef2f2; }
+  .pager-btn[disabled] { opacity:.45; cursor:not-allowed; }
+  .btn-outline:active,
+  .btn-danger-outline:active,
+  .pager-btn:active { transform: translateY(1px); }
+  
+  /* iconos alineados */
+  .material-symbols-rounded { vertical-align: -4px; }
+  
+  /* ========== responsivo ========== */
+  @media (max-width: 1200px) {
+    .td.text-slate-800 { max-width: 300px; }
+  }
+  @media (max-width: 900px) {
+    .td, .th { padding: .6rem .75rem; }
+    .td.text-slate-800 { max-width: 220px; }
+  }
+  @media (max-width: 640px) {
+    .td, .th { padding: .55rem .6rem; }
+    .td.text-slate-800 { max-width: 160px; }
+    /* acciones apiladas en pantallas pequeñas */
+    td .flex.justify-end { justify-content:flex-start; gap:.5rem; flex-wrap:wrap; }
+  }
+  

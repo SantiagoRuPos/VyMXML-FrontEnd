@@ -1,0 +1,473 @@
+<!-- Topbar -->
+<header class="w-full h-14 bg-slate-900/80 backdrop-blur-lg ring-1 ring-black/10 px-4 flex items-center justify-end">
+    <app-menu></app-menu>
+</header>
+
+<!-- Header -->
+<header class="bg-white border-b border-slate-200">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-rounded text-sky-600">apartment</span>
+      <h1 class="text-base sm:text-lg font-semibold text-slate-800">Empresas & Contabilizaciones</h1>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button
+        (click)="abrirModalEmpresa()"
+        class="inline-flex items-center gap-1 rounded-lg bg-sky-600 text-white px-3 py-1.5 hover:bg-sky-700 active:scale-[.98] transition">
+        <span class="material-symbols-rounded text-sm">add</span>
+        Nueva empresa
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== Modal Nueva Empresa ===== -->
+<div
+  *ngIf="mostrarModalEmpresa"
+  class="fixed inset-0 z-50"
+  (keydown.escape)="cerrarModalEmpresa()"
+>
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" (click)="cerrarModalEmpresa()"></div>
+
+  <!-- Panel -->
+  <div
+    class="absolute inset-0 flex items-start sm:items-center justify-center p-4 sm:p-6"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="w-full max-w-lg rounded-xl bg-white shadow-xl ring-1 ring-black/5">
+      <!-- Título -->
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-rounded text-sky-600">domain_add</span>
+          <h2 class="text-base font-semibold text-slate-800">Crear nueva empresa</h2>
+        </div>
+        <button
+          (click)="cerrarModalEmpresa()"
+          class="p-1 rounded-md hover:bg-slate-100">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+
+      <!-- Formulario -->
+      <form [formGroup]="formEmpresa" (ngSubmit)="crearEmpresa()" class="px-5 pt-4 pb-5 space-y-4">
+        <!-- Nombre -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Nombre</label>
+          <input
+            #focusNombre
+            type="text"
+            formControlName="nombre"
+            placeholder="Ej. Empresa Uno SAS"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 placeholder:text-slate-400
+                   focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+          />
+          <p *ngIf="submitted && formEmpresa.controls['nombre'].invalid"
+             class="mt-1 text-sm text-red-600">Ingresa el nombre (1–180 caracteres).</p>
+        </div>
+
+        <!-- NIT -->
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">NIT</label>
+          <input
+            type="text"
+            formControlName="nit"
+            placeholder="Ej. 901234567"
+            class="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-slate-900 placeholder:text-slate-400
+                   focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500"
+          />
+          <p *ngIf="submitted && formEmpresa.controls['nit'].invalid"
+             class="mt-1 text-sm text-red-600">Ingresa un NIT válido (máx. 50 caracteres).</p>
+        </div>
+
+        <!-- Vista previa de estado/códigos (solo visual, el backend define por defecto) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="rounded-lg border border-slate-200 px-3 py-2">
+            <span class="text-xs text-slate-500">Estado</span>
+            <div class="mt-0.5 inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5 text-xs">
+              <span class="material-symbols-rounded text-sm">check_small</span>
+              activa
+            </div>
+          </div>
+          <div class="rounded-lg border border-slate-200 px-3 py-2">
+            <span class="text-xs text-slate-500">Código (auto)</span>
+            <div class="mt-0.5 text-slate-700 text-sm">Se generará al crear</div>
+          </div>
+        </div>
+
+        <!-- Mensaje de error del servidor -->
+        <div *ngIf="serverError" class="rounded-lg bg-red-50 text-red-700 px-3 py-2 text-sm">
+          {{ serverError }}
+        </div>
+
+        <!-- Acciones -->
+        <div class="pt-2 flex items-center justify-end gap-2">
+          <button type="button"
+            (click)="cerrarModalEmpresa()"
+            class="inline-flex items-center gap-1 rounded-lg bg-white ring-1 ring-slate-300 px-3 py-2 text-slate-700 hover:bg-slate-50">
+            Cancelar
+          </button>
+
+          <button type="submit"
+            [disabled]="loading"
+            class="inline-flex items-center gap-2 rounded-lg bg-sky-600 text-white px-4 py-2 hover:bg-sky-700 disabled:opacity-60">
+            <span class="material-symbols-rounded text-base" *ngIf="!loading">save</span>
+            <svg *ngIf="loading" class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8v4A4 4 0 008 12H4z"/>
+            </svg>
+            Guardar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+  
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-5 bg-slate-50 min-h-[calc(100vh-56px)]">
+  
+    <!-- Filtros -->
+    <section class="flex flex-wrap items-center gap-2">
+      <div class="relative">
+        <span class="material-symbols-rounded absolute left-2 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+        <input
+          [ngModel]="query()"
+          (ngModelChange)="query.set($event)"
+          type="text"
+          placeholder="Buscar por nombre, NIT o código…"
+          class="pl-8 pr-3 py-2 rounded-lg bg-white ring-1 ring-slate-200 text-sm w-72">
+      </div>
+  
+      <select
+        [ngModel]="filtroEstado()"
+        (ngModelChange)="filtroEstado.set($event)"
+        class="rounded-lg bg-white ring-1 ring-slate-200 text-sm px-2 py-2">
+        <option value="todas">Todas</option>
+        <option value="activa">Activas</option>
+        <option value="inactiva">Inactivas</option>
+      </select>
+  
+      <select
+        [ngModel]="filtroTipo()"
+        (ngModelChange)="filtroTipo.set($event)"
+        class="rounded-lg bg-white ring-1 ring-slate-200 text-sm px-2 py-2">
+        <option value="todos">Todos los tipos</option>
+        <option value="emitidos">XML Emitidos</option>
+        <option value="recibidos">XML Recibidos</option>
+      </select>
+    </section>
+  
+    <!-- Grid empresas -->
+    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      <ng-container *ngFor="let e of filtradas()">
+        <article class="group rounded-xl bg-white ring-1 ring-slate-200 shadow-sm hover:shadow transition overflow-hidden">
+          <div class="p-4 flex items-start justify-between gap-3">
+            <div>
+              <h2 class="text-slate-900 font-semibold leading-tight">{{ e.nombre }}</h2>
+              <p class="text-sm text-slate-500">NIT: {{ e.nit }} · Código: {{ e.codigo }}</p>
+              <p class="text-xs text-slate-400" *ngIf="e.centroOperacion">Centro: {{ e.centroOperacion }}</p>
+            </div>
+            <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs"
+                  [ngClass]="e.estado === 'activa'
+                    ? 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+                    : 'bg-slate-100 text-slate-600 ring-1 ring-slate-200'">
+              <span class="material-symbols-rounded text-sm">{{ e.estado === 'activa' ? 'check_circle' : 'pause_circle' }}</span>
+              {{ e.estado }}
+            </span>
+          </div>
+  
+          <div class="px-4 pb-3 flex items-center justify-between">
+            <span class="text-xs text-slate-500">
+              {{ e.contabilizaciones.length }} contabilización{{ e.contabilizaciones.length === 1 ? '' : 'es' }}
+            </span>
+            <button (click)="abrirCrearContabilizacion(e.id)"
+                    class="inline-flex items-center gap-1 rounded-lg bg-slate-900 text-white text-sm px-3 py-1.5 hover:bg-slate-800">
+              <span class="material-symbols-rounded text-sm">add_circle</span>
+              Nueva contabilización
+            </button>
+          </div>
+  
+          <!-- Lista de contabilizaciones -->
+          <div class="border-t border-slate-200">
+            <div *ngIf="e.contabilizaciones.length === 0" class="p-4 text-sm text-slate-500">
+              No hay contabilizaciones configuradas.
+            </div>
+  
+            <ul *ngIf="e.contabilizaciones.length > 0" class="divide-y divide-slate-100">
+              <li *ngFor="let c of e.contabilizaciones" class="p-4 flex items-start justify-between gap-3 hover:bg-slate-50">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium text-slate-900">{{ c.nombre }}</span>
+            
+                    <span *ngIf="tipoXmlDe(c) as t"
+                    class="text-xs rounded-full px-2 py-0.5 ring-1"
+                    [ngClass]="t === 'emitidos'
+                      ? 'bg-sky-50 text-sky-700 ring-sky-200'
+                      : 'bg-indigo-50 text-indigo-700 ring-indigo-200'">
+                {{ t | titlecase }}
+              </span>
+              
+            
+                    <!-- Periodo -->
+                    <span class="text-xs text-slate-500">· {{ c.periodo }}</span>
+                  </div>
+            
+                  <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                    <span class="text-xs rounded-full px-2 py-0.5 bg-slate-100 text-slate-700">
+                      {{ c.aplicaATodos ? 'Aplica a todos los terceros' : 'Aplica por tercero' }}
+                    </span>
+                    <span class="text-xs text-slate-400">
+                      Actualizado: {{ c.updatedAt | date:'short' }}
+                    </span>
+                  </div>
+                </div>
+            
+                <div class="flex items-center gap-2 shrink-0">
+                  <button class="p-2 rounded-lg ring-1 ring-slate-200 hover:bg-white"
+                          title="Editar cuentas (PUC)"
+                          (click)="abrirEditarCuentas(e.id, c.id)">
+                    <span class="material-symbols-rounded text-slate-700">tune</span>
+                  </button>
+
+                  <button class="p-2 rounded-lg ring-1 ring-red-300 hover:bg-red-50"
+                  title="Eliminar paquete"
+                  (click)="confirmarEliminacionPaquete(c.id)">
+            <span class="material-symbols-rounded text-red-600">delete</span>
+          </button>
+                </div>
+              </li>
+            </ul>
+            
+          </div>
+        </article>
+      </ng-container>
+    </section>
+  
+    <!-- Empty state -->
+    <section *ngIf="filtradas().length === 0" class="text-center py-16">
+      <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
+        <span class="material-symbols-rounded text-slate-500">table</span>
+      </div>
+      <h3 class="mt-3 text-slate-900 font-medium">No hay resultados</h3>
+      <p class="text-sm text-slate-500">Ajusta los filtros o crea una nueva empresa.</p>
+    </section>
+  
+  </main>
+  
+  <!-- Modal crear/editar contabilización (metadatos) -->
+  <div *ngIf="modalOpen()" class="fixed inset-0 z-50 grid place-items-center bg-slate-900/40 p-4">
+    <div class="w-full max-w-lg rounded-xl bg-white shadow-xl ring-1 ring-slate-200">
+      <header class="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+        <h3 class="font-semibold text-slate-900">
+          {{ editContId() ? 'Editar contabilización' : 'Nueva contabilización' }}
+        </h3>
+        <button (click)="modalOpen.set(false)" class="p-1.5 rounded-lg hover:bg-slate-100">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </header>
+  
+      <div class="p-4 space-y-3">
+        <label class="block">
+          <span class="text-sm text-slate-600">Nombre</span>
+          <input
+            [ngModel]="form().nombre"
+            (ngModelChange)="patchForm({ nombre: $event })"
+            type="text"
+            class="mt-1 w-full rounded-lg ring-1 ring-slate-200 px-3 py-2"
+            placeholder="Ventas estándar">
+        </label>
+  
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block">
+            <span class="text-sm text-slate-600">Periodo</span>
+            <input
+              [ngModel]="form().periodo"
+              (ngModelChange)="patchForm({ periodo: $event })"
+              type="month"
+              class="mt-1 w-full rounded-lg ring-1 ring-slate-200 px-3 py-2" />
+          </label>
+  
+          <label class="block">
+            <span class="text-sm text-slate-600">Tipo de XML</span>
+            <select
+              [ngModel]="form().tipoXml"
+              (ngModelChange)="patchForm({ tipoXml: $event })"
+              class="mt-1 w-full rounded-lg ring-1 ring-slate-200 px-3 py-2">
+              <option value="emitidos">Emitidos</option>
+              <option value="recibidos">Recibidos</option>
+            </select>
+          </label>
+        </div>
+  
+        <label class="flex items-center gap-2">
+          <input
+            type="checkbox"
+            [checked]="form().aplicaATodos"
+            (change)="patchForm({ aplicaATodos: $any($event.target).checked })">
+          <span class="text-sm text-slate-700">Contabilización aplica para todos los terceros</span>
+        </label>
+  
+        <p class="text-xs text-slate-500">
+          Las cuentas asociadas se configurarán al editar la contabilización.
+        </p>
+      </div>
+  
+      <footer class="px-4 py-3 border-t border-slate-200 flex items-center justify-end gap-2">
+        <button (click)="modalOpen.set(false)" class="rounded-lg px-3 py-1.5 ring-1 ring-slate-200">Cancelar</button>
+        <button (click)="guardarContabilizacion()"
+                class="rounded-lg bg-slate-900 text-white px-3 py-1.5 hover:bg-slate-800">
+          Guardar
+        </button>
+      </footer>
+    </div>
+  </div>
+  
+  <!-- Modal Cuentas (PUC) -->
+  <div *ngIf="modalCuentasOpen()" class="fixed inset-0 z-50 grid place-items-center bg-slate-900/40 p-4">
+    <div class="w-full max-w-5xl rounded-xl bg-white shadow-xl ring-1 ring-slate-200">
+      <header class="flex items-center justify-between px-5 py-3 border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-rounded text-slate-700">account_tree</span>
+          <h3 class="font-semibold text-slate-900">Cuentas PUC de la contabilización</h3>
+        </div>
+        <button (click)="cerrarModalCuentas()" class="p-1.5 rounded-lg hover:bg-slate-100">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </header>
+  
+      <div class="p-5 space-y-4">
+        <div class="flex items-center justify-between gap-2">
+          <button (click)="addCuentaRow()"
+                  class="inline-flex items-center gap-1 rounded-lg bg-slate-900 text-white px-3 py-1.5 hover:bg-slate-800">
+            <span class="material-symbols-rounded text-sm">add_circle</span>
+            Agregar cuenta
+          </button>
+        </div>
+  
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="text-slate-500">
+              <tr class="border-b border-slate-200">
+                <th class="text-left py-2 pr-3">Cuenta PUC</th>
+                <th class="text-left py-2 pr-3">Tipo</th>
+                <th class="text-left py-2 pr-3">Naturaleza</th>
+                <th class="text-left py-2 pr-3">Tercero</th>
+                <th class="py-2"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let r of cuentasEdit(); let i = index" class="align-top">
+                <td class="py-2 pr-3">
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                      <input
+                        [ngModel]="r.cuentaCodigo"
+                        (ngModelChange)="setRowField(i, 'cuentaCodigo', $event)"
+                        type="text"
+                        placeholder="Código PUC"
+                        class="w-36 rounded-lg ring-1 ring-slate-200 px-2 py-1.5 font-mono" />
+  
+                      <input
+                        [ngModel]="r.cuentaNombre"
+                        (ngModelChange)="setRowField(i, 'cuentaNombre', $event)"
+                        type="text"
+                        placeholder="Nombre cuenta"
+                        class="w-64 rounded-lg ring-1 ring-slate-200 px-2 py-1.5" />
+                    </div>
+  
+                    <!-- Autocomplete por fila (usa pucQuery global simple) -->
+                    <div class="relative mt-1">
+                      <input
+                        [ngModel]="pucQuery()"
+                        (ngModelChange)="pucQuery.set($event)"
+                        type="text"
+                        placeholder="Buscar PUC (código o nombre)…"
+                        class="w-80 rounded-lg ring-1 ring-slate-200 px-2 py-1.5" />
+                      <div *ngIf="filteredPUC().length > 0"
+                           class="absolute z-10 mt-1 w-80 max-h-60 overflow-auto rounded-lg bg-white ring-1 ring-slate-200 shadow">
+                        <button
+                          *ngFor="let acc of filteredPUC()"
+                          type="button"
+                          class="w-full px-3 py-2 text-left hover:bg-slate-50"
+                          (click)="selectPUCForRow(i, acc)">
+                          <div class="flex items-center justify-between">
+                            <span class="font-mono text-slate-900">{{ acc.codigo }}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full ring-1"
+                                  [ngClass]="acc.sugerida === 'debito'
+                                    ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                                    : 'bg-indigo-50 text-indigo-700 ring-indigo-200'">
+                              {{ acc.sugerida ?? '—' }}
+                            </span>
+                          </div>
+                          <div class="text-xs text-slate-600">{{ acc.nombre }}</div>
+                        </button>
+                      </div>
+                    </div>
+  
+                    <p class="text-[11px] text-slate-400">
+                      Sugerida según PUC:
+                      <strong>{{ sugeridaPorCodigo(r.cuentaCodigo) }}</strong>
+                    </p>
+                  </div>
+                </td>
+  
+                <td class="py-2 pr-3">
+                  <select
+                    [ngModel]="r.tipo"
+                    (ngModelChange)="setRowField(i, 'tipo', $event)"
+                    class="rounded-lg ring-1 ring-slate-200 px-2 py-1.5">
+                    <option value="ingreso">Ingreso</option>
+                    <option value="impuestos">Impuestos</option>
+                    <option value="pago">Pago</option>
+                    <option value="costo">Costo</option>
+                    <option value="gasto">Gasto</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </td>
+  
+                <td class="py-2 pr-3">
+                  <select
+                    [ngModel]="r.naturaleza"
+                    (ngModelChange)="setRowField(i, 'naturaleza', $event)"
+                    class="rounded-lg ring-1 ring-slate-200 px-2 py-1.5">
+                    <option value="debito">Débito</option>
+                    <option value="credito">Crédito</option>
+                  </select>
+                </td>
+  
+                <td class="py-2 pr-3">
+                  <input
+                    [ngModel]="r.tercero"
+                    (ngModelChange)="setRowField(i, 'tercero', $event)"
+                    type="text"
+                    placeholder="Documento / NIT / 'Documento'"
+                    class="w-52 rounded-lg ring-1 ring-slate-200 px-2 py-1.5" />
+                </td>
+  
+                <td class="py-2">
+                  <button (click)="removeCuentaRow(i)"
+                          class="p-2 rounded-lg ring-1 ring-slate-200 hover:bg-white"
+                          title="Eliminar fila">
+                    <span class="material-symbols-rounded text-rose-600">delete</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+  
+      </div>
+  
+      <footer class="px-5 py-3 border-t border-slate-200 flex items-center justify-end gap-2">
+        <button (click)="cerrarModalCuentas()" class="rounded-lg px-3 py-1.5 ring-1 ring-slate-200">Cancelar</button>
+        <button (click)="guardarCuentasPUC()"
+                class="rounded-lg bg-slate-900 text-white px-3 py-1.5 hover:bg-slate-800">
+          Guardar cuentas
+        </button>
+      </footer>
+    </div>
+  </div>
+  

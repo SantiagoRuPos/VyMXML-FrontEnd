@@ -1,0 +1,125 @@
+<!-- Login VM Consulting — único, limpio y con acentos teal/cyan del logo -->
+<div class="min-h-screen bg-gradient-to-b from-[#0a1720] to-[#0e1d29] text-slate-100 flex items-center justify-center p-6">
+    <section class="w-full max-w-md rounded-2xl bg-white/5 backdrop-blur-xl ring-1 ring-white/10 p-8 md:p-10 shadow-2xl">
+  
+      <!-- Header -->
+      <div class="flex items-center gap-3">
+        <img src="assets/logo.png" alt="VM Consulting" class="h-10 w-10 rounded-md bg-white/10 p-1">
+        <div>
+          <h1 class="text-xl font-semibold">VM Consulting</h1>
+          <p class="text-slate-300 text-sm">Iniciar sesión</p>
+        </div>
+      </div>
+  
+      <div class="mt-4 h-px w-full bg-gradient-to-r from-teal-400/30 via-cyan-400/30 to-teal-400/30"></div>
+  
+      <!-- Alerta de error -->
+      <div *ngIf="errorMsg()" class="mt-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-300 px-3 py-2 text-sm">
+        {{ errorMsg() }}
+      </div>
+  
+      <!-- Formulario -->
+      <form class="mt-6 space-y-5" (submit)="onSubmit($event)">
+        <!-- Email -->
+        <div class="space-y-2">
+          <label class="text-sm text-slate-300">Correo electrónico</label>
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none">
+              <path d="M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M3.5 7.5 12 13l8.5-5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+  
+            <input
+              #emailCtrl="ngModel"
+              type="email"
+              name="email"
+              [ngModel]="email()"
+              (ngModelChange)="email.set(($event || '').trim())"
+              placeholder="contabilidad@empresa.co"
+              autocomplete="username"
+              class="w-full pl-11 pr-3 py-2 rounded-xl bg-slate-900/60 ring-1 ring-white/10 focus:ring-2 focus:ring-teal-500 outline-none"
+              [class.ring-red-500]="emailCtrl.invalid && (emailCtrl.dirty || emailCtrl.touched)"
+              required
+            />
+          </div>
+          <p *ngIf="emailCtrl.invalid && (emailCtrl.dirty || emailCtrl.touched)" class="text-xs text-red-400">
+            Ingresa un correo válido.
+          </p>
+        </div>
+  
+        <!-- Password -->
+        <div class="space-y-2">
+          <label class="text-sm text-slate-300">Contraseña</label>
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" viewBox="0 0 24 24" fill="none">
+              <circle cx="7.5" cy="12.5" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M10 12.5h10M17 12.5v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+  
+            <input
+              #passCtrl="ngModel"
+              [type]="showPass() ? 'text' : 'password'"
+              name="password"
+              [ngModel]="password()"
+              (ngModelChange)="password.set($event)"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              class="w-full pl-11 pr-12 py-2 rounded-xl bg-slate-900/60 ring-1 ring-white/10 focus:ring-2 focus:ring-teal-500 outline-none"
+              [class.ring-red-500]="passCtrl.invalid && (passCtrl.dirty || passCtrl.touched)"
+              required minlength="6"
+            />
+  
+            <button type="button"
+              (click)="toggleShow()"
+              class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg hover:bg-white/5"
+              aria-label="Mostrar/ocultar contraseña">
+              <ng-container *ngIf="showPass(); else eyeOpen">
+                <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none">
+                  <path d="M3 3l18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <path d="M10.6 7.2A5 5 0 0 1 12 7c5 0 8.5 5 8.5 5a14.8 14.8 0 0 1-3.1 3.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  <path d="M6.6 9.2C5 10.5 3.5 12 3.5 12s3.5 5 8.5 5c.7 0 1.3-.1 1.9-.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </ng-container>
+              <ng-template #eyeOpen>
+                <svg class="h-5 w-5 text-slate-300" viewBox="0 0 24 24" fill="none">
+                  <path d="M2 12s4-6 10-6 10 6 10 6-4 6-10 6S2 12 2 12Z" stroke="currentColor" stroke-width="1.5"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+              </ng-template>
+            </button>
+          </div>
+          <p *ngIf="passCtrl.invalid && (passCtrl.dirty || passCtrl.touched)" class="text-xs text-red-400">
+            Mínimo 6 caracteres.
+          </p>
+        </div>
+  
+        <!-- Remember + link -->
+        <div class="flex items-center justify-between text-sm">
+          <label class="inline-flex items-center gap-2">
+            <input type="checkbox" name="remember"
+                   [ngModel]="remember()"
+                   (ngModelChange)="remember.set($event)"
+                   class="h-4 w-4 rounded border-white/20 bg-slate-900/60">
+            <span class="text-slate-300">Recordarme</span>
+          </label>
+          <button type="button" class="text-teal-300 hover:text-cyan-300">¿Olvidaste tu contraseña?</button>
+        </div>
+  
+        <!-- Submit -->
+        <button type="submit"
+                [disabled]="loading() || !email() || !password()"
+                class="w-full py-2.5 rounded-xl font-semibold transition
+                       disabled:opacity-50 disabled:cursor-not-allowed
+                       bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500
+                       text-white shadow-lg shadow-teal-600/20">
+          {{ loading() ? 'Ingresando…' : 'Entrar' }}
+        </button>
+      </form>
+  
+      <!-- Footer -->
+      <p class="mt-6 text-center text-xs text-slate-400">
+        © {{ currentYear }} VM Consulting — Todos los derechos reservados.
+      </p>
+    </section>
+  </div>
+  
