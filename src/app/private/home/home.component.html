@@ -1,0 +1,43 @@
+<app-menu></app-menu>
+
+
+<div *ngIf="facturaData; else noFactura">
+  <h3>Factura:</h3>
+  <ul>
+    <li><strong>Factura #:</strong> {{ facturaData.invoiceNumber }}</li>
+    <li><strong>Fecha:</strong> {{ facturaData.issueDate }}</li>
+    <li><strong>Hora:</strong> {{ facturaData.issueTime }}</li>
+    <li><strong>Proveedor:</strong> {{ facturaData.supplierName }}</li>
+    <li><strong>NIT Proveedor:</strong> {{ facturaData.supplierNIT }}</li>
+    <li><strong>Cliente:</strong> {{ facturaData.customerName }}</li>
+    <li><strong>NIT Cliente:</strong> {{ facturaData.customerNIT }}</li>
+    <li><strong>Total:</strong> {{ facturaData.totalAmount }}</li>
+    <li><strong>IVA Total:</strong> {{ facturaData.totalIVA }}</li>
+  </ul>
+
+  <h4>Productos</h4>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Descripción</th>
+        <th>Cantidad</th>
+        <th>Precio Unitario</th>
+        <th>Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of facturaData.items; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ item.description }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ item.unitPrice }}</td>
+        <td>{{ item.totalLine }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<ng-template #noFactura>
+  <p><em>No se ha proporcionado un XML.</em></p>
+</ng-template>
