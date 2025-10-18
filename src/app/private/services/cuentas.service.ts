@@ -91,7 +91,7 @@ export interface ReporteMasivo {
 export class CuentasService {
   constructor(private http: HttpClient) {}
 
-  private readonly apiBase = 'http://localhost:6824';
+  private readonly apiBase = 'http://34.29.216.209:6824';
 
 
 
