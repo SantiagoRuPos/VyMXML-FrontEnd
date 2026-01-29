@@ -91,7 +91,7 @@ export interface ReporteMasivo {
 export class CuentasService {
   constructor(private http: HttpClient) {}
 
-  private readonly apiBase = 'http://34.29.216.209:6824';
+  private readonly apiBase = 'http://localhost:6824';
 
 
 
@@ -452,7 +452,7 @@ async create(input: Omit<PUCAccount, 'id' | 'creadoEn' | 'actualizadoEn'>): Prom
 
   listarPorEmpresa(empresaId: string): Observable<PaqueteResumen[]> {
     const url = `${this.apiBase}/cuentas/listar-paquetes`;
-    console.log('[PKTS][REQ]', url, { empresaId });
+
     return this.http.get<PaqueteResumen[]>(url, { params: { empresaId } }).pipe(
       tap(res => console.log('[PKTS][RES]', res)),
       catchError(err => {
