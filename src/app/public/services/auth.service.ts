@@ -81,23 +81,29 @@ export class AuthService {
   }
 
   /** (Opcional) Decodificar payload del JWT si necesitas claims extra */
-  decodeTokenPayload(): any | null {
-    const token = this.getToken();
-    if (!token) return null;
-    const [, payload] = token.split('.');
-    if (!payload) return null;
-    // base64url -> base64
-    const b64 = payload.replace(/-/g, '+').replace(/_/g, '/');
-    try {
-      const json = (typeof atob !== 'undefined')
-        ? atob(b64)
-        : Buffer.from(b64, 'base64').toString('binary');
-      return JSON.parse(decodeURIComponent([...json].map(c => {
-        const code = c.charCodeAt(0).toString(16).padStart(2, '0');
-        return `%${code}`;
-      }).join('')));
-    } catch { return null; }
+decodeTokenPayload(): any | null {
+  const token = this.getToken();
+  if (!token) return null;
+
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+
+  try {
+    // Base64URL → Base64
+    const payload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+
+    // Decodificación segura en browser
+    const json = atob(payload);
+
+    return JSON.parse(decodeURIComponent(
+      json.split('').map(c =>
+        '%' + c.charCodeAt(0).toString(16).padStart(2, '0')
+      ).join('')
+    ));
+  } catch {
+    return null;
   }
+}
 
 
   // src/app/core/auth/auth.service.ts
